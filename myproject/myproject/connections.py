@@ -15,8 +15,21 @@ class Database:
         self.firebase = pyrebase.initialize_app(config)
         self.authe = self.firebase.auth()
         self.database = self.firebase.database()
+        self.storage = self.firebase.storage()
     
     def get_db(self,db_name):
         return self.database.child(db_name).get().val()
+    
+    def add_db(self,db_name,id,json):
+        self.database.child(db_name).child(id).set(json)
+        
+    def update_db(self,db_name,hopper,json):
+        self.database.child(db_name).child(hopper).update(json)
+    
+    def get_storage(self,folder_name):
+        return self.storage.child(folder_name).get()
+    
+    def add_storage(self,folder_name,path):
+        self.storage.child(folder_name).child(path).put(path)
     
 global_db = Database()

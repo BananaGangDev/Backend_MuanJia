@@ -1,9 +1,4 @@
-import firebase_admin
-from firebase_admin import firestore
-from firebase_admin import storage
-from firebase_admin import credentials
-
-config = {
+{
   "type": "service_account",
   "project_id": "muanjia",
   "private_key_id": "81cde9689c0d301ebb5e1c0bb782e9afa522f601",
@@ -16,36 +11,3 @@ config = {
   "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/spy-241%40muanjia.iam.gserviceaccount.com",
   "universe_domain": "googleapis.com"
 }
-
-
-class Database:
-    def __init__(self):
-        if not firebase_admin._apps:
-            cred = credentials.Certificate('/Users/spy/Backend_MuanJia/myproject/myproject/muanjia-81cde9689c0d.json')        
-            firebase_admin.initialize_app(cred)
-        
-        self.db = firestore.client()
-        self.payment_folder = storage.bucket('payment_slip')
-        self.product_folder = storage.bucket('product_images')
-        
-    
-    def get_db(self,collection):
-        return self.db.collection(collection).stream()
-    
-    def add_db_with_id(self,collection,document,json):
-        self.db.collection(collection).document(document).set(json)
-    
-    def add_db_auto_id(self,collection,json):
-        new_data = self.db.collection(collection.add(json))
-        return new_data.id
-        
-    def update_db(self,collection,document,json):
-        self.db.collection(collection).document(document).update(json)
-    
-    def get_storage(self,folder_name):
-        return self.storage.child(folder_name).get()
-    
-    def add_storage(self,folder_name,path):
-        self.storage.child(folder_name).child(path).put(path)
-    
-global_db = Database()

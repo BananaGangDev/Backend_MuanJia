@@ -6,19 +6,18 @@ from rest_framework.response import Response
 from products import views
 import json
 from rest_framework import status
+
 # Create your views here.
 
 
-def create_payment(order_id,amount,slip):
-    payment_id = 1 + int(max(list(global_db.get_db('payment').keys())))
+def create_payment(order_id,amount,slip_url):
     item = {
         "order_id" : order_id,
         "status" : False,
         "amount" : amount,
-        "slip" : slip
+        "slip" : slip_url
     }
-    global_db.add_db(db_name='payment',id=payment_id,json=item)
-    return payment_id
+    return global_db.add_db_auto_id(collection='payment',json=item)
 
 @api_view(['GET'])
 def get_payment_by_id(requests,id):

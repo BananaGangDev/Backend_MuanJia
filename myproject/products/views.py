@@ -9,24 +9,31 @@ from rest_framework.exceptions import ValidationError,ParseError
 from rest_framework import status
 import requests
 
-PRODUCT = global_db.get_db('products')
 
 @api_view(['GET'])
-def get_all(self):
-    if requests.method() == 'get':
-        return Response(data=json.dumps(PRODUCT),status=status.HTTP_200_OK)
+def get_all(request):
+    if request.method == 'GET':
+        products_db = global_db.get_db('products').stream()
+        products = {}
+        for product in products_db:
+            # print(product.id,product.to_dict())
+            product_id = str(product.id)
+            product_item = product.to_dict()
+            products.update({product_id : product_item})
+        # print(products)
+        return Response(data=products,status=status.HTTP_200_OK)
     else : 
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])    
-def get_by_product_name(requests,search_name):
-    if requests.method() == 'get':
+def get_by_product_name(request,search_name):
+    if request.method == 'GET':
         result = []
-        for key,value in PRODUCT.items():
-            print(value['product_name'],type(value['product_name']))
-            print(search_name,type(search_name))
-            if search_name in value['product_name']:
-                result.append((key,value))
+        for product in global_db.get_db('products').stream():
+            product_id = product.id
+            product_item = product.to_dict()
+            if search_name in product_item['product_name']:
+                result.append({product_id:product_item})
             
         if not result :
             return Response(data="No data. Please refill again.",status=status.HTTP_204_NO_CONTENT)
@@ -36,24 +43,26 @@ def get_by_product_name(requests,search_name):
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET'])    
-def get_product_by_id(requests,id):
+def get_product_by_id(request,id):
     # print(id,type(id))
-    if requests.method() == 'get':
+    if request.method == 'GET':
+        product = global_db.get_db('products').document(str(id)).get()
         result = []
-        for key,value in PRODUCT.items():
-            if  id == int(key):
-                result.append((key,value))
-        
-        if not result :
+        if product :
+            product_id = product.id
+            product_item = product.to_dict()
+            result.append({product_id:product_item})
+            return Response(result,status=status.HTTP_200_OK)   
+        else:
             return Response(data="No data. Please refill again.",status=status.HTTP_204_NO_CONTENT)
-        else :              
-            return Response(result,status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)
         
 def get_price_by_id(id):
-    for key,value in PRODUCT.items():
-        if  id == int(key):
-            # print(value['price'],type(value['price']))
-            return float(value['price'])
+    return float(global_db.get_db('products').document(str(id)).get().to_dict()['price'])
+    
+    # for key,value in global_db.get_db('products').items():
+    #     if  id == int(key):
+    #         # print(value['price'],type(value['price']))
+    #         return float(value['price'])
     

@@ -21,7 +21,7 @@ config = {
 class Database:
     def __init__(self):
         if not firebase_admin._apps:
-            cred = credentials.Certificate('/Users/spy/Backend_MuanJia/myproject/myproject/muanjia-81cde9689c0d.json')        
+            cred = credentials.Certificate('/Users/spy/Backend_MuanJia/myproject/myproject/cn334-16626-firebase-adminsdk-kgcqa-204738990b.json')        
             firebase_admin.initialize_app(cred)
         
         self.db = firestore.client()
@@ -30,13 +30,14 @@ class Database:
         
     
     def get_db(self,collection):
-        return self.db.collection(collection).stream()
+        return self.db.collection(collection)
     
     def add_db_with_id(self,collection,document,json):
         self.db.collection(collection).document(document).set(json)
     
     def add_db_auto_id(self,collection,json):
-        new_data = self.db.collection(collection.add(json))
+        update_time,new_data = self.db.collection(collection).add(json)
+        # print(new_data.id)
         return new_data.id
         
     def update_db(self,collection,document,json):

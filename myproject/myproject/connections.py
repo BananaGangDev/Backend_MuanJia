@@ -21,7 +21,7 @@ config = {
 class Database:
     def __init__(self):
         if not firebase_admin._apps:
-            cred = credentials.Certificate('/Users/spy/Backend_MuanJia/myproject/myproject/cn334-16626-firebase-adminsdk-kgcqa-204738990b.json')        
+            cred = credentials.Certificate('myproject/cn334-16626-firebase-adminsdk-kgcqa-204738990b.json')        
             firebase_admin.initialize_app(cred)
         
         self.db = firestore.client()

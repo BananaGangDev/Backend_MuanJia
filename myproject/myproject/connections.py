@@ -17,17 +17,15 @@ config = {
   "universe_domain": "googleapis.com"
 }
 
+CREDENTIALS_PATH = 'myproject/cn334-16626-firebase-adminsdk-kgcqa-204738990b.json'
 
 class Database:
     def __init__(self):
         if not firebase_admin._apps:
-            cred = credentials.Certificate('myproject/cn334-16626-firebase-adminsdk-kgcqa-204738990b.json')        
+            cred = credentials.Certificate(CREDENTIALS_PATH)        
             firebase_admin.initialize_app(cred)
         
         self.db = firestore.client()
-        self.payment_folder = storage.bucket('payment_slip')
-        self.product_folder = storage.bucket('product_images')
-        
     
     def get_db(self,collection):
         return self.db.collection(collection)
@@ -43,10 +41,28 @@ class Database:
     def update_db(self,collection,document,json):
         self.db.collection(collection).document(document).update(json)
     
-    def get_storage(self,folder_name):
-        return self.storage.child(folder_name).get()
+class Storage:
     
-    def add_storage(self,folder_name,path):
-        self.storage.child(folder_name).child(path).put(path)
+    def __init__(self):
+        if not firebase_admin._apps:
+            cred = credentials.Certificate(CREDENTIALS_PATH)        
+            firebase_admin.initialize_app(cred,{'storage':'cn334-16626.appspot.com'})
+            
+            self.bucket = storage.bucket()
+    
+    def add_storage(self,folder,filename):
+        path = folder + "/" + filename
+        blob = self.bucket.blob(path)
+        blob.upload_from_filename(path)
+        
+        blob.make_public()
+        return blob.public_url    
+    
+    def get_storage(self,folder,filename):
+        path = folder + filename
+        blob = self.bucket.blob(path)
+        return blob.public
+        
     
 global_db = Database()
+global_storage = Storage()

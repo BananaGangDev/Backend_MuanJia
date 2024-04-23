@@ -3,12 +3,18 @@ from rest_framework.views import APIView
 from rest_framework import generics
 import pyrebase
 import json
-from myproject.connections import global_db
+from myproject.connections import global_db,global_storage
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError,ParseError
 from rest_framework import status
 import requests
+import IPython
+import os
 
+Apikey='7Nnz7YqING7Q3LMriW4O4ph8VTK6I6aH'
+HEADERS = {'apikey': 'OlHGq5r3lOTYWxAxXeQTq2yRq2aJqh4O'}
+url = 'https://api.aiforthai.in.th/vaja9/synth_audiovisual'
+headers = {'Apikey':Apikey,'Content-Type' : 'application/json'}
 
 @api_view(['GET'])
 def get_all(request):
@@ -57,12 +63,42 @@ def get_product_by_id(request,id):
             return Response(data="No data. Please refill again.",status=status.HTTP_204_NO_CONTENT)
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)
-        
-def get_price_by_id(id):
-    return float(global_db.get_db('products').document(str(id)).get().to_dict()['price'])
-    
+
+@api_view(['GET'])        
+def get_price_by_id(request,id):
+    if request.method == 'GET':
+        return float(global_db.get_db('products').document(str(id)).get().to_dict()['price'])
+    else : 
+        return Response(status=status.HTTP_400_BAD_REQUEST)
     # for key,value in global_db.get_db('products').items():
     #     if  id == int(key):
     #         # print(value['price'],type(value['price']))
     #         return float(value['price'])
+    
+@api_view(['GET'])
+def get_sound(request,id):
+    if request.method == 'GET':
+        data = global_db.get_db('products').document(str(id)).get().to_dict()
+        text = data['product_name'] + " " + data['description'] + " ราคา " + str(data["price"]) + " บาท "
+        data = {'input_text':text,'speaker': 0, 'phrase_break':0, 'audiovisual':0}
+        response = requests.post(url, json=data, headers=headers)
+        resp = requests.get(response.json()['wav_url'],headers={'Apikey':Apikey})
+        if resp.status_code == 200:
+            filename = id + ".wav"
+            with open(filename, 'wb') as a:
+                a.write(resp.content)
+            bucket = global_storage.add_storage(folder='sound',filename=filename)
+            if bucket:
+                if os.path.exists(filename):
+                    os.remove(filename)
+                    return Response(bucket,status=status.HTTP_200_OK)
+                else:
+                    return Response(data="This file doesn't not exits",status=status.HTTP_404_NOT_FOUND)
+            else:
+                return Response(data="This file cannot upload",status=status.HTTP_404_NOT_FOUND)
+        else:
+            return Response(data=resp.reason,status=status.HTTP_400_BAD_REQUEST)
+
+    else : 
+        return Response(status=status.HTTP_400_BAD_REQUEST)
     

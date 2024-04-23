@@ -22,7 +22,6 @@ def get_all(request):
         products_db = global_db.get_db('products').stream()
         products = {}
         for product in products_db:
-            # print(product.id,product.to_dict())
             product_id = str(product.id)
             product_item = product.to_dict()
             products.update({product_id : product_item})
@@ -75,14 +74,15 @@ def get_price_by_id(request,id):
     #         # print(value['price'],type(value['price']))
     #         return float(value['price'])
     
-@api_view(['GET'])
+@api_view(['POST'])
 def get_sound(request,id):
-    if request.method == 'GET':
+    if request.method == 'POST':
         data = global_db.get_db('products').document(str(id)).get().to_dict()
         text = data['product_name'] + " " + data['description'] + " ราคา " + str(data["price"]) + " บาท "
         data = {'input_text':text,'speaker': 0, 'phrase_break':0, 'audiovisual':0}
         response = requests.post(url, json=data, headers=headers)
         resp = requests.get(response.json()['wav_url'],headers={'Apikey':Apikey})
+        print(resp)
         if resp.status_code == 200:
             filename = id + ".wav"
             with open(filename, 'wb') as a:

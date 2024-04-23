@@ -1,6 +1,6 @@
 import firebase_admin
 from firebase_admin import firestore
-from firebase_admin import storage
+from google.cloud import storage
 from firebase_admin import credentials
 
 config = {
@@ -47,12 +47,11 @@ class Storage:
         if not firebase_admin._apps:
             cred = credentials.Certificate(CREDENTIALS_PATH)        
             firebase_admin.initialize_app(cred,{'storage':'cn334-16626.appspot.com'})
-            
-            self.bucket = storage.bucket()
+            self.storage_client = storage.Client(cred)
     
     def add_storage(self,folder,filename):
         path = folder + "/" + filename
-        blob = self.bucket.blob(path)
+        blob = self.storage_client.bucket(folder).blob(filename)
         blob.upload_from_filename(path)
         
         blob.make_public()

@@ -41,9 +41,10 @@ def get_payment_by_id(request,id):
 def update_status(request,id,slip):
     if request.method == 'PUT':
         path = slip
+        url = global_db.add_storage(folder="payment_slip",filename=str(id)+"_slip",path_data=path)
         json = {
             "status" : True,
-            "slip" : path
+            "slip" : url
         }
         global_db.update_db('payment',str(id),json)
         return Response("Updated Successfully",status=status.HTTP_200_OK)

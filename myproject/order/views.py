@@ -94,7 +94,7 @@ def create_order(request,firstname,lastname,phone,email,address,items):
         for key,value in items_json.items():
             # print("item",key)
             create_order_items(order_id=order_id,product_id=str(key),quantity=int((value)))
-            total += product_views.get_price_by_id(key) * int(value)
+            total += product_views.get_price_by_id(id=key) * int(value)
                     
         payment_id = payment_views.create_payment(order_id,amount=total,slip_url="None")
         json_data = {

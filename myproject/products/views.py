@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework import generics
 import pyrebase
 import json
-from myproject.connections import global_db,global_storage
+from myproject.connections import global_db
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError,ParseError
 from rest_framework import status
@@ -62,13 +62,11 @@ def get_product_by_id(request,id):
             return Response(data="No data. Please refill again.",status=status.HTTP_204_NO_CONTENT)
     else:
         return Response(status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['GET'])        
-def get_price_by_id(request,id):
-    if request.method == 'GET':
-        return float(global_db.get_db('products').document(str(id)).get().to_dict()['price'])
-    else : 
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+     
+def get_price_by_id(id):
+    return float(global_db.get_db('products').document(str(id)).get().to_dict()['price'])
+    # else : 
+    #     return Response(status=status.HTTP_400_BAD_REQUEST)
     # for key,value in global_db.get_db('products').items():
     #     if  id == int(key):
     #         # print(value['price'],type(value['price']))
@@ -84,11 +82,12 @@ def get_sound(request,id):
         resp = requests.get(response.json()['wav_url'],headers={'Apikey':Apikey})
         print(resp)
         if resp.status_code == 200:
-            filename = id + ".wav"
+            filename = "audio/" + id + ".wav"
             with open(filename, 'wb') as a:
                 a.write(resp.content)
-            bucket = global_storage.add_storage(folder='sound',filename=filename)
+            bucket = global_db.add_storage(folder='sound',filename=filename,path_data=filename)
             if bucket:
+                global_db.update_db('product',id,{'sound_url': bucket})
                 if os.path.exists(filename):
                     os.remove(filename)
                     return Response(bucket,status=status.HTTP_200_OK)

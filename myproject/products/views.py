@@ -24,8 +24,28 @@ def get_all(request):
         for product in products_db:
             product_id = str(product.id)
             product_item = product.to_dict()
-            products.update({product_id : product_item})
-        # print(products)
+            for key,value in product_item.items():
+                if key == "product_name":
+                    product_name = value
+                elif key == "description":
+                    description = value
+                elif key == "price" :
+                    price = value
+                elif key == "image_url":
+                    image_url = value
+                elif key == "sound_url":
+                    sound_url = value
+            
+            data = { product_id : {
+                "product_name" : product_name,
+                "description" : description,
+                "price" : price,
+                "image_url" : image_url,
+                "sound_url" : sound_url
+            }}
+            products.update(data)
+        
+        print(products)
         return Response(data=products,status=status.HTTP_200_OK)
     else : 
         return Response(status=status.HTTP_400_BAD_REQUEST)

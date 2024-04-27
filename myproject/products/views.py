@@ -16,6 +16,7 @@ HEADERS = {'apikey': 'OlHGq5r3lOTYWxAxXeQTq2yRq2aJqh4O'}
 url = 'https://api.aiforthai.in.th/vaja9/synth_audiovisual'
 headers = {'Apikey':Apikey,'Content-Type' : 'application/json'}
 
+    
 @api_view(['GET'])
 def get_all(request):
     if request.method == 'GET':
@@ -53,12 +54,33 @@ def get_all(request):
 @api_view(['GET'])    
 def get_by_product_name(request,search_name):
     if request.method == 'GET':
-        result = []
+        result = {}
         for product in global_db.get_db('products').stream():
             product_id = product.id
             product_item = product.to_dict()
             if search_name in product_item['product_name']:
-                result.append({product_id:product_item})
+                for key,value in product_item.items():
+                    if key == "product_name":
+                        product_name = value
+                    elif key == "description":
+                        description = value
+                    elif key == "price" :
+                        price = value
+                    elif key == "image_url":
+                        image_url = value
+                    elif key == "sound_url":
+                        sound_url = value
+            
+                data = { product_id : {
+                    "product_name" : product_name,
+                    "description" : description,
+                    "price" : price,
+                    "image_url" : image_url,
+                    "sound_url" : sound_url
+                }}
+            
+                result.update(data)
+                # result.append({product_id:product_item})
             
         if not result :
             return Response(data="No data. Please refill again.",status=status.HTTP_204_NO_CONTENT)
@@ -72,11 +94,32 @@ def get_product_by_id(request,id):
     # print(id,type(id))
     if request.method == 'GET':
         product = global_db.get_db('products').document(str(id)).get()
-        result = []
+        result = {}
         if product :
             product_id = product.id
             product_item = product.to_dict()
-            result.append({product_id:product_item})
+            for key,value in product_item.items():
+                print(key,value)
+                if key == "product_name":
+                    product_name = value
+                elif key == "description":
+                    description = value
+                elif key == "price" :
+                    price = value
+                elif key == "image_url":
+                    image_url = value
+                elif key == "sound_url":
+                    sound_url = value
+                    
+            data = { product_id : {
+                "product_name" : product_name,
+                "description" : description,
+                "price" : price,
+                "image_url" : image_url,
+                "sound_url" : sound_url
+                }}
+                    
+            result.update(data)
             return Response(result,status=status.HTTP_200_OK)   
         else:
             return Response(data="No data. Please refill again.",status=status.HTTP_204_NO_CONTENT)

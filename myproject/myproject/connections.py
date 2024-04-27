@@ -1,6 +1,6 @@
 import firebase_admin
 from firebase_admin import firestore
-from firebase_admin import storage
+from google.cloud import storage
 from firebase_admin import credentials
 
 config = {
@@ -17,17 +17,19 @@ config = {
   "universe_domain": "googleapis.com"
 }
 
+CREDENTIALS_PATH = 'myproject/cn334-16626-firebase-adminsdk-kgcqa-204738990b.json'
 
 class Database:
     def __init__(self):
         if not firebase_admin._apps:
-            cred = credentials.Certificate('myproject/cn334-16626-firebase-adminsdk-kgcqa-204738990b.json')        
-            firebase_admin.initialize_app(cred)
+            cred = credentials.Certificate(CREDENTIALS_PATH)        
+            # firebase_admin.initialize_app(credential=credentials.Certificate(CREDENTIALS_PATH),{
+            #     "storageBucket" : "cn334-16626.appspot.com"
+            #     })
+            firebase_admin.initialize_app(cred, {'storageBucket': 'cn334-16626.appspot.com'})
         
         self.db = firestore.client()
-        self.payment_folder = storage.bucket('payment_slip')
-        self.product_folder = storage.bucket('product_images')
-        
+        self.storage = storage.Client()
     
     def get_db(self,collection):
         return self.db.collection(collection)
@@ -42,11 +44,20 @@ class Database:
         
     def update_db(self,collection,document,json):
         self.db.collection(collection).document(document).update(json)
+        
+    def add_storage(self,folder,filename,path_data):
+        path = folder + "/" + filename
+        bucket = self.storage.bucket(folder)
+        blob = bucket.blob(filename)
+        blob.upload_from_filename(path_data)
+                                            
+        blob.make_public()
+        return blob.public_url            
     
-    def get_storage(self,folder_name):
-        return self.storage.child(folder_name).get()
-    
-    def add_storage(self,folder_name,path):
-        self.storage.child(folder_name).child(path).put(path)
+    def get_storage(self,folder,filename):
+        path = folder + filename
+        blob = self.bucket.blob(path)
+        return blob.public
+
     
 global_db = Database()

@@ -1,3 +1,4 @@
+import datetime
 from myproject.connections import global_db
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError,ParseError
@@ -72,7 +73,6 @@ def create_order_items(order_id,product_id,quantity):
         "quantity" : int(quantity)
     }
     return global_db.add_db_auto_id(collection='order_item',json=item)
-    
 
 @api_view(['POST'])
 def create_order(request,firstname,lastname,phone,email,address,items):
@@ -99,7 +99,8 @@ def create_order(request,firstname,lastname,phone,email,address,items):
         payment_id = payment_views.create_payment(order_id,amount=total,slip_url="None")
         json_data = {
             "payment_id" : payment_id,
-            "total" : total
+            "total" : total,
+            "datetime" : datetime.datetime.now()
         }
         global_db.update_db("order",order_id,json=json_data)            
         return Response(data={"order_id":order_id},status=status.HTTP_201_CREATED)

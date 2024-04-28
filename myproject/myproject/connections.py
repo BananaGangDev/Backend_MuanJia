@@ -28,6 +28,7 @@ class Database:
             #     })
             firebase_admin.initialize_app(cred, {'storageBucket': 'cn334-16626.appspot.com'})
         
+        client = storage.Client.from_service_account_json(json_credentials_path=CREDENTIALS_PATH)
         self.db = firestore.client()
         self.storage = storage.Client()
     
@@ -44,20 +45,30 @@ class Database:
         
     def update_db(self,collection,document,json):
         self.db.collection(collection).document(document).update(json)
+    
+    def delete_db(self,collection,document):
+        self.db.collection(collection).document(document).delete()
         
     def add_storage(self,folder,filename,path_data):
-        path = folder + "/" + filename
-        bucket = self.storage.bucket(folder)
-        blob = bucket.blob(filename)
+        bucket = self.storage.get_bucket('cn334-16626.appspot.com')
+        path = folder+"/"+filename
+        print(path)
+        blob = bucket.blob(path)
+        # blob = blob.blob(filename)
         blob.upload_from_filename(path_data)
                                             
         blob.make_public()
         return blob.public_url            
     
     def get_storage(self,folder,filename):
-        path = folder + filename
-        blob = self.bucket.blob(path)
-        return blob.public
+        path = folder + "/" + filename
+        bucket = self.storage.get_bucket('cn334-16626.appspot.com')
+        blob = bucket.blob(path)
+        if blob in [404]: 
+            blob.make_public()
+            return blob.public_url
+        else : 
+            return False
 
     
 global_db = Database()

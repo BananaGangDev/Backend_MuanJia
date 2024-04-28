@@ -1,3 +1,4 @@
+import datetime
 from myproject.connections import global_db
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError,ParseError
@@ -6,7 +7,8 @@ from rest_framework.response import Response
 from products import views
 import json
 from rest_framework import status
-
+from rest_framework.parsers import (MultiPartParser, FormParser)
+import os
 # Create your views here.
 
 def create_payment(order_id,amount,slip_url):
@@ -38,20 +40,25 @@ def get_payment_by_id(request,id):
         return Response(status=status.HTTP_400_BAD_REQUEST)        
     
 @api_view(['PUT'])
-def update_status(request,id,slip):
+def update_status(request,id,path_slip):
     if request.method == 'PUT':
-        path = slip
-        url = global_db.add_storage(folder="payment_slip",filename=str(id)+"_slip",path_data=path)
-        json = {
-            "status" : True,
-            "slip" : url
-        }
-        global_db.update_db('payment',str(id),json)
-        return Response("Updated Successfully",status=status.HTTP_200_OK)
+        datatype = path_slip.split('.')[-1]
+        with open(path_slip, 'wb') as a:
+            url = global_db.add_storage(folder='payment_slip',filename=id+"."+datatype,path_data=path_slip)
+            if url:
+                global_db.update_db('payment',str(id),{'slip': url})
+                global_db.update_db('payment',str(id),{'status': True})
+                global_db.update_db('payment',str(id),{'paid_datetime': datetime.datetime.now()})
+                if os.path.exists(path_slip):
+                    os.remove(path_slip)
+                    return Response("Updated Successfully",status=status.HTTP_200_OK)
+                else:
+                    return False
+            else:
+                return False
     else : 
         return Response(status=status.HTTP_400_BAD_REQUEST)   
         
-    
 @api_view(['GET'])
 def get_payment_by_order_id(request,order_id):
     if request.method == 'GET':
@@ -68,3 +75,4 @@ def get_payment_by_order_id(request,order_id):
             return Response(result,status=status.HTTP_200_OK)
     else : 
         return Response(status=status.HTTP_400_BAD_REQUEST)
+

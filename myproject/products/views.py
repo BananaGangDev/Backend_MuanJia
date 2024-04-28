@@ -35,7 +35,7 @@ def get_all(request):
                     image_url = value
                 elif key == "sound_url":
                     if value in ["",None]:
-                        sound_url = get_sound(id)
+                        sound_url = get_sound(product_id)
                     else : 
                         sound_url=value
             
@@ -135,7 +135,8 @@ def get_price_by_id(id):
 def get_sound(id):
     # if request.method == 'POST':
     data = global_db.get_db('products').document(str(id)).get().to_dict()
-    if data['sound_url'] in [None,"","eiei"]:
+    print(data)
+    if (data['sound_url'] in [None,""]):
         sound = global_db.get_storage('sound',id+".wav")
         if sound:
             link = global_db.update_db(collection='products',document=id,json={'sound_url':sound})
@@ -152,15 +153,15 @@ def get_sound(id):
             if resp.status_code == 200:
                 link = upload_sound(id,resp.content)
                 if link is not False:
-                    return Response(data=link,status=status.HTTP_201_CREATED)
+                    return link
                 else : 
-                    return Response(data="Cannot ypdate sound to firestore",status=status.HTTP_404_NOT_FOUND)
+                    return ""
             elif resp.status_code == 429:
-                return Response(data="Too many request",status=status.HTTP_204_NO_CONTENT)
+                return ""
             else:
-                return Response(data=resp.reason,status=status.HTTP_400_BAD_REQUEST)
+                return ""
     else:
-        return Response(data=data['sound_url'],status=status.HTTP_200_OK)
+        return ""
     # else : 
     #     return Response(status=status.HTTP_400_BAD_REQUEST)
 

@@ -45,17 +45,20 @@ def get_payment_by_id(request,id):
 def update_status(request,id,image):
     if request.method == 'PUT':
         payment_id = get_payment_by_order_id(id)
+        if payment_id == "":
+            return Response(data="No Data,Please Refill Again",status=status.HTTP_204_NO_CONTENT)
+        
         path_slip = upload_image(payment_id,image=image)
         datatype = path_slip.split('.')[-1]
         with open(path_slip, 'wb') as a:
-            url = global_db.add_storage(folder='payment_slip',filename=payment_idid+"."+datatype,path_data=path_slip)
+            url = global_db.add_storage(folder='payment_slip',filename=payment_id+"."+datatype,path_data=path_slip)
             if url:
-                global_db.update_db('payment',str(id),{'slip': url})
-                global_db.update_db('payment',str(id),{'status': True})
-                global_db.update_db('payment',str(id),{'paid_datetime': datetime.datetime.now()})
+                global_db.update_db('payment',str(payment_id),{'slip': url})
+                global_db.update_db('payment',str(payment_id),{'status': True})
+                global_db.update_db('payment',str(payment_id),{'paid_datetime': datetime.datetime.now()})
                 if os.path.exists(path_slip):
                     os.remove(path_slip)
-                    return Response("Updated Successfully",status=status.HTTP_200_OK)
+                    return Response(data=id,status=status.HTTP_200_OK)
                 else:
                     return False
             else:
@@ -65,17 +68,13 @@ def update_status(request,id,image):
         
 def get_payment_by_order_id(order_id):
     result = []
-    for payment in global_db.get_db('payment').streams():
+    for payment in global_db.get_db('payment').stream():
         payment_id = payment.id
         payment_item = payment.to_dict()
-        if order_id in payment_item['order_id']:
-            result.append({payment_id,payment_item})
+        if order_id == payment_item['order_id']:
+            return payment_id
             
-    if not result :
-        return Response(data="No data. Please refill again.",status=status.HTTP_204_NO_CONTENT)
-    else :              
-        return Response(result,status=status.HTTP_200_OK)
-
+    return ""
 
 def upload_image(id,image):
     fm,imgstr = image.split(';base64,')
@@ -83,7 +82,6 @@ def upload_image(id,image):
     filename = id + "." + ext
     path = "image/" + filename
     padding = 4 - len(imgstr) % 4
-    # print(imgstr)
     if padding:
         imgstr += "=" * padding
     image_data = base64.b64decode(imgstr)

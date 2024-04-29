@@ -47,7 +47,10 @@ class Database:
         self.db.collection(collection).document(document).update(json)
     
     def delete_db(self,collection,document):
-        self.db.collection(collection).document(document).delete()
+        if self.db.collection(collection).document(document):
+            self.db.collection(collection).document(document).delete()
+        else : 
+            return "No data"
         
     def add_storage(self,folder,filename,path_data):
         bucket = self.storage.get_bucket('cn334-16626.appspot.com')

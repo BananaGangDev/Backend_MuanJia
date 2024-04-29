@@ -78,7 +78,7 @@ def create_order_items(order_id,product_id,quantity):
 def create_order(request,firstname,lastname,phone,email,address,items):
     if request.method == 'POST':
         # print("before",items)
-        items_json = json.loads(json.loads(items))
+        items_json = json.loads(items)
         # print("after",items_json,type(items_json))
         total = 0
         order = {

@@ -184,9 +184,11 @@ def upload_sound(id,content):
 def delete_product(request,id):
     if request.method == "DELETE":
         data = global_db.delete_db(collection='products',document=id)
+        print(data)
         if data == "No data":
             return Response(data="Delete Unsuccessfully",status=status.HTTP_200_OK)
         else : 
+            global_db.delete_db(collection='products',document=id)
             return Response(data="Delete Successfully",status=status.HTTP_404_NOT_FOUND)
     else : 
         return Response(status=status.HTTP_400_BAD_REQUEST)

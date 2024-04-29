@@ -25,12 +25,12 @@ def create_payment(order_id,amount,slip_url):
 @api_view(['GET'])
 def get_payment_by_id(request,id):
     if request.method == 'GET':
-        payment = global_db.get_db('payment').document(id).get()
+        payment = global_db.get_db(collection='payment').document(id).get().to_dict()
         result = []
-        if payment :
-            payment_id = payment.id
-            payment_item = payment.to_dict()
-            result.append({payment_id:payment_item})
+        print(payment)
+        if payment not in [None,{}]:
+            payment_item = payment
+            result.append({id:payment_item})
             return Response(result,status=status.HTTP_200_OK)   
         else :
             return Response(data="No data. Please refill again.",status=status.HTTP_204_NO_CONTENT)
@@ -58,7 +58,7 @@ def update_status(request,id,image):
                 global_db.update_db('payment',str(payment_id),{'paid_datetime': datetime.datetime.now()})
                 if os.path.exists(path_slip):
                     os.remove(path_slip)
-                    return Response(data=id,status=status.HTTP_200_OK)
+                    return Response(data={"order_id":id},status=status.HTTP_200_OK)
                 else:
                     return False
             else:

@@ -183,9 +183,9 @@ def upload_sound(id,content):
 @api_view(['DELETE'])
 def delete_product(request,id):
     if request.method == "DELETE":
-        data = global_db.delete_db(collection='products',document=id)
+        data = global_db.get_db(collection='products').document(id).get().to_dict()
         print(data)
-        if data == "No data":
+        if data in [{},None]:
             return Response(data="Delete Unsuccessfully",status=status.HTTP_200_OK)
         else : 
             global_db.delete_db(collection='products',document=id)

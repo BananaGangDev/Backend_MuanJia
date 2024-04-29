@@ -106,4 +106,3 @@ def create_order(request,firstname,lastname,phone,email,address,items):
         return Response(data={"order_id":order_id},status=status.HTTP_201_CREATED)
     else :
         return Response(status=status.HTTP_400_BAD_REQUEST)
-      

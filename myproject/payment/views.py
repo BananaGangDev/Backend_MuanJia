@@ -11,13 +11,12 @@ from rest_framework.parsers import (MultiPartParser, FormParser)
 import os
 # Create your views here.
 
-def create_payment(order_id,amount,slip_url,payment_channel):
+def create_payment(order_id,amount,slip_url):
     item = {
         "order_id" : order_id,
         "status" : False,
         "amount" : amount,
         "slip" : slip_url,
-        "payment_channel" : payment_channel
     }
     return global_db.add_db_auto_id(collection='payment',json=item)
 

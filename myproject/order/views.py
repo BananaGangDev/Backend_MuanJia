@@ -56,12 +56,14 @@ def get_order_by_id(request,id):
 def get_order_item_by_id(request,order_id): #get order items by order id
     if request.method == 'GET':
         result = []
-        for order_items in global_db.get_db('order_item'):
-            ans = order_items.where("order_id",order_id).stream()
-            if ans :
-                result.append({ans.id:ans.to_dict()})
-            
-        return Response(result,status=status.HTTP_200_OK)   
+        for order_items in global_db.get_db('order_item').where("order_id","==",order_id).stream():
+            if order_items :
+                result.append({order_items.id:order_items.to_dict()})
+        
+        if result not in []:
+            return Response(data="No data , Please Refill Again",status=status.HTTP_204_NO_CONTENT)  
+        else:
+            return Response(result,status=status.HTTP_200_OK)   
     else : 
         return Response(status=status.HTTP_400_BAD_REQUEST)  
            

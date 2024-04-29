@@ -9,6 +9,8 @@ import json
 from rest_framework import status
 from rest_framework.parsers import (MultiPartParser, FormParser)
 import os
+import base64
+from django.core.files.base import ContentFile
 # Create your views here.
 
 def create_payment(order_id,amount,slip_url):
@@ -40,8 +42,9 @@ def get_payment_by_id(request,id):
         return Response(status=status.HTTP_400_BAD_REQUEST)        
     
 @api_view(['PUT'])
-def update_status(request,id,path_slip):
+def update_status(request,id,image):
     if request.method == 'PUT':
+        path_slip = upload_image(id,image=image)
         datatype = path_slip.split('.')[-1]
         with open(path_slip, 'wb') as a:
             url = global_db.add_storage(folder='payment_slip',filename=id+"."+datatype,path_data=path_slip)
@@ -76,3 +79,18 @@ def get_payment_by_order_id(request,order_id):
     else : 
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
+def upload_image(id,image):
+    fm,imgstr = image.split(';base64,')
+    ext = fm.split('/')[-1]
+    filename = id + "." + ext
+    path = "image/" + filename
+    padding = 4 - len(imgstr) % 4
+    # print(imgstr)
+    if padding:
+        imgstr += "=" * padding
+    image_data = base64.b64decode(imgstr)
+    with open(path, 'wb') as a:
+        a.write(image_data)
+    return path
+    

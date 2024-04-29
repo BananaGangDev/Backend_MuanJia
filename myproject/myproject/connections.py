@@ -35,6 +35,9 @@ class Database:
     def get_db(self,collection):
         return self.db.collection(collection)
     
+    # def get_db_by_condition(self,collection,column,data):
+    #     return self.db.collection(collection).where(column,"==",data).get()
+    
     def add_db_with_id(self,collection,document,json):
         self.db.collection(collection).document(document).set(json)
     

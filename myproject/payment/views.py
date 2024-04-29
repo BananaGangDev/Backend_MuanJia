@@ -44,10 +44,11 @@ def get_payment_by_id(request,id):
 @api_view(['PUT'])
 def update_status(request,id,image):
     if request.method == 'PUT':
-        path_slip = upload_image(id,image=image)
+        payment_id = get_payment_by_order_id(id)
+        path_slip = upload_image(payment_id,image=image)
         datatype = path_slip.split('.')[-1]
         with open(path_slip, 'wb') as a:
-            url = global_db.add_storage(folder='payment_slip',filename=id+"."+datatype,path_data=path_slip)
+            url = global_db.add_storage(folder='payment_slip',filename=payment_idid+"."+datatype,path_data=path_slip)
             if url:
                 global_db.update_db('payment',str(id),{'slip': url})
                 global_db.update_db('payment',str(id),{'status': True})
@@ -62,22 +63,18 @@ def update_status(request,id,image):
     else : 
         return Response(status=status.HTTP_400_BAD_REQUEST)   
         
-@api_view(['GET'])
-def get_payment_by_order_id(request,order_id):
-    if request.method == 'GET':
-        result = []
-        for payment in global_db.get_db('payment').streams():
-            payment_id = payment.id
-            payment_item = payment.to_dict()
-            if order_id in payment_item['order_id']:
-                result.append({payment_id,payment_item})
+def get_payment_by_order_id(order_id):
+    result = []
+    for payment in global_db.get_db('payment').streams():
+        payment_id = payment.id
+        payment_item = payment.to_dict()
+        if order_id in payment_item['order_id']:
+            result.append({payment_id,payment_item})
             
-        if not result :
-            return Response(data="No data. Please refill again.",status=status.HTTP_204_NO_CONTENT)
-        else :              
-            return Response(result,status=status.HTTP_200_OK)
-    else : 
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+    if not result :
+        return Response(data="No data. Please refill again.",status=status.HTTP_204_NO_CONTENT)
+    else :              
+        return Response(result,status=status.HTTP_200_OK)
 
 
 def upload_image(id,image):

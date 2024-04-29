@@ -48,7 +48,7 @@ def get_all(request):
             }}
             products.update(data)
         
-        print(products)
+        # print(products)
         return Response(data=products,status=status.HTTP_200_OK)
     else : 
         return Response(status=status.HTTP_400_BAD_REQUEST)
@@ -135,7 +135,7 @@ def get_price_by_id(id):
 def get_sound(id):
     # if request.method == 'POST':
     data = global_db.get_db('products').document(str(id)).get().to_dict()
-    print(data)
+    # print(data)
     if (data['sound_url'] in [None,""]):
         sound = global_db.get_storage('sound',id+".wav")
         if sound:
@@ -182,12 +182,13 @@ def upload_sound(id,content):
             return False
 
 @api_view(['DELETE'])
-def delete_product(request,product_id):
+def delete_product(request,id):
     if request.method == "DELETE":
-        if global_db.delete_db('products',product_id):
-            return Response(data="Delete Successfully",status=status.HTTP_200_OK)
+        data = global_db.delete_db(collection='products',document=id)
+        if data == "No data":
+            return Response(data="Delete Unsuccessfully",status=status.HTTP_200_OK)
         else : 
-            return Response(data="Delete Unsuccessfully",status=status.HTTP_404_NOT_FOUND)
+            return Response(data="Delete Successfully",status=status.HTTP_404_NOT_FOUND)
     else : 
         return Response(status=status.HTTP_400_BAD_REQUEST)
     

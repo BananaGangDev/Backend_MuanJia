@@ -75,10 +75,10 @@ def create_order_items(order_id,product_id,quantity):
     return global_db.add_db_auto_id(collection='order_item',json=item)
 
 @api_view(['POST'])
-def create_order(request,firstname,lastname,phone,email,address,items):
+def create_order(request,firstname,lastname,phone,email,address,payment_channel,items):
     if request.method == 'POST':
         # print("before",items)
-        items_json = json.loads(json.loads(items))
+        items_json = json.loads(items)
         # print("after",items_json,type(items_json))
         total = 0
         order = {
@@ -89,6 +89,7 @@ def create_order(request,firstname,lastname,phone,email,address,items):
             "address" : address,
             "payment_id" : "",
             "total" : "",
+            "payment_channel" : payment_channel 
         }
         order_id = global_db.add_db_auto_id(collection='order',json=order)     
         for key,value in items_json.items():
@@ -96,7 +97,7 @@ def create_order(request,firstname,lastname,phone,email,address,items):
             create_order_items(order_id=order_id,product_id=str(key),quantity=int((value)))
             total += product_views.get_price_by_id(id=key) * int(value)
                     
-        payment_id = payment_views.create_payment(order_id,amount=total,slip_url="None")
+        payment_id = payment_views.create_payment(order_id,amount=total,slip_url="None",payment_channel=payment_channel)
         json_data = {
             "payment_id" : payment_id,
             "total" : total,

@@ -8,5 +8,5 @@ urlpatterns = [
     path("docs/",include_docs_urls()),
     path('product/',include('products.urls')),
     path('order/',include('order.urls')),
-    path('payment',include('payment.urls')),
+    path('payment/',include('payment.urls')),
 ]

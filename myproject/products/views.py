@@ -8,7 +8,6 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import ValidationError,ParseError
 from rest_framework import status
 import requests
-import IPython
 import os
 
 Apikey='7Nnz7YqING7Q3LMriW4O4ph8VTK6I6aH'

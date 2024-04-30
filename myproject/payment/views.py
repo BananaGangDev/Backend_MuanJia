@@ -49,6 +49,8 @@ def update_status(request,id,image):
             return Response(data="No Data,Please Refill Again",status=status.HTTP_204_NO_CONTENT)
         
         path_slip = upload_image(payment_id,image=image)
+        if path_slip == "":
+            return Response(data="Please try again",status=status.HTTP_409_CONFLICT)
         datatype = path_slip.split('.')[-1]
         with open(path_slip, 'wb') as a:
             url = global_db.add_storage(folder='payment_slip',filename=payment_id+"."+datatype,path_data=path_slip)
@@ -81,11 +83,22 @@ def upload_image(id,image):
     ext = fm.split('/')[-1]
     filename = id + "." + ext
     path = "image/" + filename
-    padding = 4 - len(imgstr) % 4
-    if padding:
-        imgstr += "=" * padding
-    image_data = base64.b64decode(imgstr)
-    with open(path, 'wb') as a:
-        a.write(image_data)
-    return path
+    
+    try:
+        image_data = base64.b64decode(imgstr)
+        print("Decoded image size:", len(image_data))
+        with open(path, 'wb') as file:
+            file.write(image_data)
+        print("File written successfully, size:", path, len(image_data))
+        return path
+    except Exception as e:
+        print("An error occurred:", str(e))
+        return ""
+    # padding = 4 - len(imgstr) % 4
+    # if padding:
+    #     imgstr += "=" * padding
+    # image_data = base64.b64decode(imgstr)
+    # with open(path, 'wb') as a:
+    #     a.write(image_data)
+    # return path
     
